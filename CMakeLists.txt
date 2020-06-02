@@ -10,6 +10,6 @@ include_directories("Libs/pugixml-1.10/src")
 
 #add_definitions(-DDEBUG_XML)
 
-add_executable(AppSysImpl main.cpp server.cpp serializer.cpp)
+add_executable(AppSysImpl main.cpp netlistener.cpp clientmgr.cpp consolewriter.cpp thd.cpp)
 
 target_link_libraries(AppSysImpl pugixml)

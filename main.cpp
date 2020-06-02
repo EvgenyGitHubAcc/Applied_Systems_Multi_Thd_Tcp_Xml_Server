@@ -1,13 +1,13 @@
 #include <iostream>
-
-#include "serializer.h"
+#include <thread>
+#include "consolewriter.h"
+#include "thd.h"
 
 int main(void)
 {
-    byteArray arr;
-    std::pair<std::string, std::string> data;
-    Serializer::unserialize(arr);
-    Serializer::serialize(data);
+    THD thds;
+    thds.mainLoop();
+
     system("pause");
     return 0;
 }
