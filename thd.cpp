@@ -2,17 +2,21 @@
 
 void THD::mainLoop()
 {
+    if(!writerPtr)
+    {
+       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
     while (true)
     {
-        line = "Hi";
+        *writerPtr << "Hi";
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
 
 THD::THD()
 {
-    ConsoleWriter writer(line);
-    writerThread = std::move(std::thread(writer));
+    ConsoleWriter writer;
+    writerThread = std::move(std::thread(writer, &writerPtr));
 }
 
 THD::~THD()

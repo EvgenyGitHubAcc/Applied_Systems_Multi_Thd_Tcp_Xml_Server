@@ -5,18 +5,21 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <mutex>
 
 class ConsoleWriter
 {
 private:
-    std::string& line;
+    std::string line = "";
     bool thdActive = false;
+    bool canPrint = true;
     unsigned int getTimestamp();
 public:
-    ConsoleWriter(std::string &);
+    ConsoleWriter();
+    ConsoleWriter(ConsoleWriter &&);
+    ConsoleWriter(const ConsoleWriter &);
     void stopWriterThd();
-    void operator()();
+    void operator()(ConsoleWriter **);
+    void operator<<(std::string str);
 };
 
 #endif // CONSOLEWRITER_H

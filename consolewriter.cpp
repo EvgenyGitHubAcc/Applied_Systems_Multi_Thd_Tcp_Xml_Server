@@ -1,5 +1,12 @@
 #include "consolewriter.h"
 
+void ConsoleWriter::operator<<(std::string str)
+{
+    canPrint = false;
+    line = std::move(str);
+    canPrint = true;
+}
+
 unsigned int ConsoleWriter::getTimestamp()
 {
     std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>
@@ -9,7 +16,24 @@ unsigned int ConsoleWriter::getTimestamp()
     return s.count();
 }
 
-ConsoleWriter::ConsoleWriter(std::string & str) : line(str)
+ConsoleWriter::ConsoleWriter(ConsoleWriter && obj)
+{
+    line = std::move(obj.line);
+    thdActive = obj.thdActive;
+    canPrint = obj.canPrint;
+    obj.line = "";
+    obj.thdActive = NULL;
+    obj.canPrint = NULL;
+}
+
+ConsoleWriter::ConsoleWriter(const ConsoleWriter & obj)
+{
+    line = obj.line;
+    thdActive = obj.thdActive;
+    canPrint = obj.canPrint;
+}
+
+ConsoleWriter::ConsoleWriter()
 {
 
 }
@@ -19,12 +43,13 @@ void ConsoleWriter::stopWriterThd()
     thdActive = false;
 }
 
-void ConsoleWriter::operator()()
+void ConsoleWriter::operator()(ConsoleWriter ** consoleWriterPtr)
 {
+    *consoleWriterPtr = this;
     thdActive = true;
     while(thdActive)
     {
-        if(line.size())
+        if(line.size() && canPrint)
         {
             std::cout << getTimestamp() << " " << line << std::endl;
             line.clear();

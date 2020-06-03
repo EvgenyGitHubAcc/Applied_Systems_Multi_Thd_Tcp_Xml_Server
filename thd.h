@@ -6,8 +6,8 @@
 class THD
 {
 private:
+    ConsoleWriter * writerPtr = nullptr;
     std::thread writerThread;
-    std::string line;
 public:
     void mainLoop();
     THD();

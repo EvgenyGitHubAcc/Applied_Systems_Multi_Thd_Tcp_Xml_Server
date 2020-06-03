@@ -12,4 +12,4 @@ include_directories("Libs/pugixml-1.10/src")
 
 add_executable(AppSysImpl main.cpp netlistener.cpp clientmgr.cpp consolewriter.cpp thd.cpp)
 
-target_link_libraries(AppSysImpl pugixml)
+target_link_libraries(AppSysImpl pugixml ws2_32)
