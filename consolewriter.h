@@ -6,13 +6,14 @@
 #include <chrono>
 #include <thread>
 #include <queue>
+#include <mutex>
 
 class ConsoleWriter
 {
 private:
     std::queue<std::string> messQueue;
+    std::mutex writerMtx;
     bool thdActive = false;
-    bool canPrint = true;
     unsigned int getTimestamp();
 public:
     ConsoleWriter();

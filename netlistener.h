@@ -20,7 +20,7 @@ private:
     std::string netData = "";
     SOCKET servSocket = 0;
     SOCKET clientSocket = 0;
-
+    std::deque<SOCKET> clientsockQue;
     struct sockaddr_in sin = {0};
     struct sockaddr_in from_sin = {0};
 public:

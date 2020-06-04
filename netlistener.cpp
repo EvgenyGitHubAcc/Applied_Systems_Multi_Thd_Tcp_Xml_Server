@@ -1,7 +1,7 @@
 #include "netlistener.h"
 
 NetListener::NetListener(ConsoleWriter * _consWriter, MainTHD * _mainThd) : consWriter(_consWriter),
-                                                                            mainThd(_mainThd)
+    mainThd(_mainThd)
 {
 
 }
@@ -42,14 +42,14 @@ bool NetListener::initServer()
 
 void NetListener::connHandler()
 {
-    char recvBuf[BUF_SIZE];
     while(true)
     {
         int from_len = sizeof(from_sin);
         clientSocket = accept(servSocket, (struct sockaddr *)&from_sin, &from_len);
 
-        *consWriter << "Connected " + std::to_string(clientSocket);
+        *consWriter << "Connected socket: " + std::to_string(clientSocket);
 
+        char recvBuf[BUF_SIZE];
         if(recv(clientSocket, recvBuf, BUF_SIZE, 0) == SOCKET_ERROR)
         {
             *consWriter << "Error receving data from " + std::to_string(clientSocket) + ". Error: " + std::to_string(WSAGetLastError());
@@ -61,20 +61,24 @@ void NetListener::connHandler()
 
         netData = std::move(std::string(recvBuf));
 
-        *consWriter << "Received from " + std::to_string(clientSocket) + " " + netData;
-
-        // Here should be a method for return an answer for command
+        *consWriter << "Received from socket: " + std::to_string(clientSocket) + " " + netData;
 
         netData = mainThd->getResponse(netData);
 
-        send(clientSocket, netData.data(), netData.size(), 0);
-
-        *consWriter << "Send to " + std::to_string(clientSocket) + " " + netData;
+        if(netData.size())
+        {
+            send(clientSocket, netData.data(), netData.size(), 0);
+            *consWriter << "Send to socket: " + std::to_string(clientSocket) + " " + netData;
+        }
+        else
+        {
+            *consWriter << "Answer was not send, because no command is found in map";
+        }
 
         shutdown(clientSocket, 0);
         closesocket(clientSocket);
-
-        *consWriter << "Disconnected " + std::to_string(clientSocket);
+        *consWriter << "Disconnected socket: " + std::to_string(clientSocket);
+        clientSocket = SOCKET_ERROR;
     }
 
 }

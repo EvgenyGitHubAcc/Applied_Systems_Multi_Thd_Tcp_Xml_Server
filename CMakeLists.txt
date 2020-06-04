@@ -10,6 +10,6 @@ include_directories("Libs/pugixml-1.10/src")
 
 #add_definitions(-DCONS_WRITE_DEBUG)
 
-add_executable(AppSysImpl main.cpp netlistener.cpp consolewriter.cpp mainthd.cpp)
+add_executable(AppSysImpl main.cpp netlistener.cpp consolewriter.cpp mainthd.cpp clientmgr.cpp)
 
 target_link_libraries(AppSysImpl pugixml ws2_32)
