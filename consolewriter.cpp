@@ -3,7 +3,7 @@
 void ConsoleWriter::operator<<(std::string str)
 {
     canPrint = false;
-    line = std::move(str);
+    messQueue.push(std::move(str));
     canPrint = true;
 }
 
@@ -18,17 +18,17 @@ unsigned int ConsoleWriter::getTimestamp()
 
 ConsoleWriter::ConsoleWriter(ConsoleWriter && obj)
 {
-    line = std::move(obj.line);
+    messQueue = std::move(obj.messQueue);
     thdActive = obj.thdActive;
     canPrint = obj.canPrint;
-    obj.line = "";
+    messQueue = std::move(std::queue<std::string>());
     obj.thdActive = NULL;
     obj.canPrint = NULL;
 }
 
 ConsoleWriter::ConsoleWriter(const ConsoleWriter & obj)
 {
-    line = obj.line;
+    messQueue = obj.messQueue;
     thdActive = obj.thdActive;
     canPrint = obj.canPrint;
 }
@@ -49,11 +49,11 @@ void ConsoleWriter::operator()(ConsoleWriter ** consoleWriterPtr)
     thdActive = true;
     while(thdActive)
     {
-        if(line.size() && canPrint)
+        if(canPrint && !messQueue.empty())
         {
-            std::cout << getTimestamp() << " " << line << std::endl;
-            line.clear();
+            std::cout << getTimestamp() << ": " << messQueue.front() << std::endl;
+            messQueue.pop();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

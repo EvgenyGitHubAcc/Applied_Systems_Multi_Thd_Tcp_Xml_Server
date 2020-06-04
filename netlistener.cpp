@@ -1,18 +1,43 @@
 #include "netlistener.h"
 
-NetListener::NetListener(ConsoleWriter * _consWriter) : consWriter(_consWriter)
+NetListener::NetListener(ConsoleWriter * _consWriter, MainTHD * _mainThd) : consWriter(_consWriter),
+                                                                            mainThd(_mainThd)
 {
 
 }
 
-void NetListener::initServer()
+bool NetListener::initServer()
 {
+    WSADATA wsaData;
+    if (WSAStartup(0x101, &wsaData) == SOCKET_ERROR)
+    {
+        *consWriter << "Error WSAStartup. Error: " + std::to_string(WSAGetLastError());
+        WSACleanup();
+        return false;
+    }
     servSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if(!servSocket)
+    {
+        *consWriter << "Error server socket creation. Error: " + std::to_string(WSAGetLastError());
+        WSACleanup();
+        return false;
+    }
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = SRV_PORT;
-    bind(servSocket, (struct sockaddr *)&sin, sizeof(sin));
-    listen(servSocket, MAX_CLIENTS_COUNT);
+    if(bind(servSocket, (struct sockaddr *)&sin, sizeof(sin)) == SOCKET_ERROR)
+    {
+        *consWriter << "Error bind server socket. Error: " + std::to_string(WSAGetLastError());
+        WSACleanup();
+        return false;
+    }
+    if(listen(servSocket, MAX_CLIENTS_COUNT) == SOCKET_ERROR)
+    {
+        *consWriter << "Error server socket listen. Error: " + std::to_string(WSAGetLastError());
+        WSACleanup();
+        return false;
+    }
+    return true;
 }
 
 void NetListener::connHandler()
@@ -22,19 +47,15 @@ void NetListener::connHandler()
     {
         int from_len = sizeof(from_sin);
         clientSocket = accept(servSocket, (struct sockaddr *)&from_sin, &from_len);
-        if(clientSocket == INVALID_SOCKET)
-        {
-            *consWriter << "Error socket creation";
-            return;
-        }
 
         *consWriter << "Connected " + std::to_string(clientSocket);
 
-        if(recv(clientSocket, recvBuf, BUF_SIZE, 0) == -1)
+        if(recv(clientSocket, recvBuf, BUF_SIZE, 0) == SOCKET_ERROR)
         {
-            *consWriter << "Error receving data from " + std::to_string(clientSocket);
+            *consWriter << "Error receving data from " + std::to_string(clientSocket) + ". Error: " + std::to_string(WSAGetLastError());
             shutdown(clientSocket, 0);
             closesocket(clientSocket);
+            WSACleanup();
             return;
         }
 
@@ -44,7 +65,7 @@ void NetListener::connHandler()
 
         // Here should be a method for return an answer for command
 
-        //netData =
+        netData = mainThd->getResponse(netData);
 
         send(clientSocket, netData.data(), netData.size(), 0);
 
@@ -58,8 +79,11 @@ void NetListener::connHandler()
 
 }
 
-void NetListener::operator()()
+void NetListener::operator()(NetListener ** netPtr)
 {
-    initServer();
-    connHandler();
+    *netPtr = this;
+    if(initServer())
+    {
+        connHandler();
+    }
 }

@@ -5,11 +5,12 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <queue>
 
 class ConsoleWriter
 {
 private:
-    std::string line = "";
+    std::queue<std::string> messQueue;
     bool thdActive = false;
     bool canPrint = true;
     unsigned int getTimestamp();

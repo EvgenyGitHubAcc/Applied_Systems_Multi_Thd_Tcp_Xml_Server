@@ -8,21 +8,26 @@
 #include <winsock.h>
 #include <string>
 #include "consolewriter.h"
+#include "mainthd.h"
+
+class MainTHD;
 
 class NetListener
 {
 private:
     ConsoleWriter * consWriter = nullptr;
-    std::string netData;
-    SOCKET servSocket;
-    SOCKET clientSocket;
+    MainTHD * mainThd = nullptr;
+    std::string netData = "";
+    SOCKET servSocket = 0;
+    SOCKET clientSocket = 0;
+
     struct sockaddr_in sin = {0};
     struct sockaddr_in from_sin = {0};
 public:
-    NetListener(ConsoleWriter *_consWriter);
-    void initServer();
+    NetListener(ConsoleWriter *, MainTHD *);
+    bool initServer();
     void connHandler();
-    void operator()();
+    void operator()(NetListener **);
 };
 
 #endif // NETLISTENER_H

@@ -1,12 +1,10 @@
 #include <iostream>
-#include <thread>
-#include "consolewriter.h"
-#include "thd.h"
+#include "mainthd.h"
 
 int main(void)
 {
-    THD thds;
-    thds.mainLoop();
+    MainTHD thd;
+    thd.mainLoop();
 
     system("pause");
     return 0;

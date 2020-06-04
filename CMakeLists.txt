@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(Libs/pugixml-1.10)
 include_directories("Libs/pugixml-1.10/src")
 
-#add_definitions(-DDEBUG_XML)
+#add_definitions(-DCONS_WRITE_DEBUG)
 
-add_executable(AppSysImpl main.cpp netlistener.cpp clientmgr.cpp consolewriter.cpp thd.cpp)
+add_executable(AppSysImpl main.cpp netlistener.cpp consolewriter.cpp mainthd.cpp)
 
 target_link_libraries(AppSysImpl pugixml ws2_32)
