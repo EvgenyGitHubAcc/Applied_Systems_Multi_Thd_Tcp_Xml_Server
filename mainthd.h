@@ -15,6 +15,7 @@ private:
     NetListener * networkPtr = nullptr;
     std::thread writerThread;
     std::thread networkThread;
+    std::thread checkSockThread;
     std::map<std::string, std::string> dict;
     bool fillDict();
 public:

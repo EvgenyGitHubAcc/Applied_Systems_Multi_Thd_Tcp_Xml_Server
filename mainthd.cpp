@@ -75,17 +75,23 @@ MainTHD::MainTHD()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+    checkSockThread = std::move(std::thread(&NetListener::checkClientSock, &(*networkPtr)));
 #endif
 }
 
 MainTHD::~MainTHD()
 {
+    if(checkSockThread.joinable())
+    {
+        checkSockThread.join();
+    }
+    if(networkThread.joinable())
+    {
+        (networkThread.join());
+    }
     if(writerThread.joinable())
     {
         writerThread.join();
     }
-    if(networkThread.joinable())
-    {
-        writerThread.join();
-    }
+
 }

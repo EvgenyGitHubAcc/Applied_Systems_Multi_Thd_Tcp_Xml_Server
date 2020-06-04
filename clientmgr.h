@@ -4,6 +4,8 @@
 
 class ClientMgr
 {
+private:
+    //ConsoleWriter * consWriter = nullptr;
 public:
     ClientMgr();
     void operator()();
