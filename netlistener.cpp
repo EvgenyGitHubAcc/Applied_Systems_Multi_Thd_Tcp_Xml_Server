@@ -1,9 +1,25 @@
 #include "netlistener.h"
 
 NetListener::NetListener(ConsoleWriter * _consWriter, MainTHD * _mainThd) : consWriter(_consWriter),
-    mainThd(_mainThd)
+                                                                            mainThd(_mainThd),
+                                                                            netMtxPtr(_mainThd->getNetMtx())
 {
 
+}
+
+NetListener::NetListener(NetListener && obj)
+{
+    consWriter = obj.consWriter;
+    obj.consWriter = nullptr;
+    mainThd = obj.mainThd;
+    mainThd = nullptr;
+    netMtxPtr = obj.netMtxPtr;
+    obj.netMtxPtr = nullptr;
+    servSocket = obj.servSocket;
+    servSocket = SOCKET_ERROR;
+    clientSockThdMap = std::move(obj.clientSockThdMap);
+    sin = std::move(obj.sin);
+    from_sin = std::move(obj.from_sin);
 }
 
 bool NetListener::initServer()
@@ -42,6 +58,7 @@ bool NetListener::initServer()
 
 void NetListener::connHandler()
 {
+
     while(true)
     {
         SOCKET clientSocket = SOCKET_ERROR;
@@ -54,32 +71,14 @@ void NetListener::connHandler()
             continue;
         }
 
-        clientSockDeque.push_back(clientSocket);
-        *consWriter << "Connected socket: " + std::to_string(clientSocket);
-    }
-}
+        std::pair<SOCKET, std::thread> currPair(clientSocket, std::move(std::thread(&NetListener::clientHandler, &(*this), clientSocket)));
 
-void NetListener::checkClientSock()
-{
-    while(true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        for (std::deque<SOCKET>::iterator it = clientSockDeque.begin(); it != clientSockDeque.end();)
         {
-            char recvBuf[BUF_SIZE] = "";
-            send(*it, "ping", 5, 0);
-            if (recvWithTimeOut(*it, recvBuf, BUF_SIZE, 0, TIMEOUT) == SOCKET_ERROR)
-            {
-                shutdown(*it, 0);
-                closesocket(*it);
-                *consWriter << "Disconnected socket: " + std::to_string(*it);
-                it = clientSockDeque.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
+            std::lock_guard<std::mutex> lock(*netMtxPtr);
+            clientSockThdMap.insert(std::move(currPair));
         }
+
+        *consWriter << "Connected socket: " + std::to_string(clientSocket);
     }
 }
 
@@ -98,6 +97,36 @@ int NetListener::recvWithTimeOut(SOCKET sock, char *Buffer, int Len, int flags, 
         return recv(sock, Buffer, Len, flags);
     }
     return(n);
+}
+
+void NetListener::clientHandler(SOCKET sock)
+{
+    std::string text = "";
+    char recvBuf[BUF_SIZE] = "";
+    while(recvWithTimeOut(sock, recvBuf, BUF_SIZE, 0, TIMEOUT) != SOCKET_ERROR)
+    {
+        text = std::move(std::string(recvBuf));
+        *consWriter << "Received from socket: " + std::to_string(sock) + " " + text;
+
+        text = std::move(mainThd->getResponse(text));
+
+        if(text.size())
+        {
+            send(sock, text.data(), text.size(), 0);
+            *consWriter << "Send to socket: " + std::to_string(sock) + " " + text;
+        }
+        else
+        {
+            *consWriter << "Answer was not send, because no command is found in map";
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    }
+    shutdown(sock, 0);
+    closesocket(sock);
+    *consWriter << "Disconnected socket: " + std::to_string(sock);
+    std::lock_guard<std::mutex> lock(*netMtxPtr);
+    clientSockThdMap.erase(sock);
 }
 
 void NetListener::operator()(NetListener ** netPtr)

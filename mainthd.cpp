@@ -53,9 +53,22 @@ void MainTHD::mainLoop()
     }
 }
 
-const std::string & MainTHD::getResponse(const std::string & key)
+std::mutex *MainTHD::getNetMtx()
 {
-    return dict[key];
+    return &netMtx;
+}
+
+const std::string MainTHD::getResponse(const std::string & key)
+{
+    if(key.find(key))
+    {
+        return dict[key];
+    }
+    else
+    {
+        return std::string("");
+    }
+
 }
 
 MainTHD::MainTHD()
@@ -70,21 +83,21 @@ MainTHD::MainTHD()
 #ifndef CONS_WRITE_DEBUG
     NetListener server(writerPtr, this);
 
-    networkThread = std::move(std::thread(server, &networkPtr));
+    networkThread = std::move(std::thread(std::move(server), &networkPtr));
     while(!networkPtr)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    checkSockThread = std::move(std::thread(&NetListener::checkClientSock, &(*networkPtr)));
+//    checkSockThread = std::move(std::thread(&NetListener::checkClientSock, &(*networkPtr)));
 #endif
 }
 
 MainTHD::~MainTHD()
 {
-    if(checkSockThread.joinable())
-    {
-        checkSockThread.join();
-    }
+//    if(checkSockThread.joinable())
+//    {
+//        checkSockThread.join();
+//    }
     if(networkThread.joinable())
     {
         (networkThread.join());
@@ -93,5 +106,4 @@ MainTHD::~MainTHD()
     {
         writerThread.join();
     }
-
 }

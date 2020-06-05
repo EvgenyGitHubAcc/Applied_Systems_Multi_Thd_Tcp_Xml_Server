@@ -11,7 +11,9 @@
 #include <deque>
 #include "consolewriter.h"
 #include "mainthd.h"
-
+#include <algorithm>
+#include <mutex>
+#include <map>
 
 class MainTHD;
 
@@ -21,15 +23,17 @@ private:
     ConsoleWriter * consWriter = nullptr;
     MainTHD * mainThd = nullptr;
     SOCKET servSocket = 0;
-    std::deque<SOCKET> clientSockDeque;
+    std::mutex * netMtxPtr;
+    std::map<SOCKET, std::thread> clientSockThdMap;
     struct sockaddr_in sin = {0};
     struct sockaddr_in from_sin = {0};
 public:
     NetListener(ConsoleWriter *, MainTHD *);
+    NetListener(NetListener &&);
     bool initServer();
     void connHandler();
-    void checkClientSock();
     int recvWithTimeOut(SOCKET, char *, int, int, long);
+    void clientHandler(SOCKET);
     void operator()(NetListener **);
 };
 

@@ -15,12 +15,14 @@ private:
     NetListener * networkPtr = nullptr;
     std::thread writerThread;
     std::thread networkThread;
-    std::thread checkSockThread;
+    std::mutex netMtx;
+//    std::thread checkSockThread;
     std::map<std::string, std::string> dict;
     bool fillDict();
 public:
     void mainLoop();
-    const std::string & getResponse(const std::string &);
+    std::mutex * getNetMtx();
+    const std::string getResponse(const std::string &);
     MainTHD();
     ~MainTHD();
 };
