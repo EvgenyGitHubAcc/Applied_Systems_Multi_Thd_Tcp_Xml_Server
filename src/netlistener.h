@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <mutex>
 #include <map>
+#include <sstream>
 
 class MainTHD;
 

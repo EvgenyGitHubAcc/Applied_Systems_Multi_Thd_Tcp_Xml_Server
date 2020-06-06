@@ -5,6 +5,7 @@
 #include "netlistener.h"
 #include "pugixml.hpp"
 #include <map>
+#include <string>
 
 class NetListener;
 

@@ -60,15 +60,14 @@ std::mutex *MainTHD::getNetMtx()
 
 const std::string MainTHD::getResponse(const std::string & key)
 {
-    if(key.find(key))
-    {
-        return dict[key];
-    }
-    else
+    if(dict.find(key) == dict.end())
     {
         return std::string("");
     }
-
+    else
+    {
+        return dict[key];
+    }
 }
 
 MainTHD::MainTHD()
@@ -88,16 +87,11 @@ MainTHD::MainTHD()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-//    checkSockThread = std::move(std::thread(&NetListener::checkClientSock, &(*networkPtr)));
 #endif
 }
 
 MainTHD::~MainTHD()
 {
-//    if(checkSockThread.joinable())
-//    {
-//        checkSockThread.join();
-//    }
     if(networkThread.joinable())
     {
         (networkThread.join());
