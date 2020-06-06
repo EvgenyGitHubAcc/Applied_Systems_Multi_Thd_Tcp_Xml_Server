@@ -4,7 +4,7 @@ bool MainTHD::fillDict()
 {
     pugi::xml_document doc;
     std::pair<std::string, std::string> dictCurrValue;
-    if(!doc.load_file("ComRespServer.xml"))
+    if(!doc.load_file("../ComRespServer.xml"))
     {
         *writerPtr << "Error XML file opening";
         return false;

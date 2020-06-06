@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<message>
+   <command>Comm1</command>
+   <response>Resp1</response>
+   <command>Comm2</command>
+   <response>Resp2</response>
+   <command>Comm3</command>
+   <response>Resp3</response>
+   <command>Comm4</command>
+   <response>Resp4</response>
+   <command>Comm5</command>
+   <response>Resp6</response>
+</message>
