@@ -56,28 +56,38 @@ bool NetListener::initServer()
     return true;
 }
 
+void NetListener::shutdownServer()
+{
+    shutdown(servSocket, 0);
+    closesocket(servSocket);
+    *consWriter << "Disconnected server socket: " + std::to_string(servSocket) + ". Error:" + std::to_string(WSAGetLastError());
+    WSACleanup();
+}
+
 void NetListener::connHandler()
 {
-
     while(true)
     {
-        SOCKET clientSocket = SOCKET_ERROR;
+        SOCKET clientSocket = INVALID_SOCKET;
 
         int from_len = sizeof(from_sin);
+
         clientSocket = accept(servSocket, (struct sockaddr *)&from_sin, &from_len);
 
-        if(clientSocket == SOCKET_ERROR)
+        if(clientSocket == INVALID_SOCKET)
         {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            WSACleanup();
             continue;
         }
 
         std::thread currThd(&NetListener::clientHandler, &(*this), clientSocket);
-//        currThd.detach();
         std::pair<SOCKET, std::thread> currPair(clientSocket, std::move(currThd));
 
         {
             std::lock_guard<std::mutex> lock(*netMtxPtr);
             clientSockThdMap.insert(std::move(currPair));
+            clientSockThdMap[clientSocket].detach();
         }
 
         *consWriter << "Connected socket: " + std::to_string(clientSocket);
@@ -106,26 +116,31 @@ void NetListener::clientHandler(SOCKET sock)
     std::string text = "";
     char recvBuf[BUF_SIZE] = "";
 
-//    std::stringstream ss;
-//    ss << std::this_thread::get_id();
-
-//    *consWriter << ss.str();
-
     //while(recvWithTimeOut(sock, recvBuf, BUF_SIZE, 0, TIMEOUT) != SOCKET_ERROR)
 
-//    std::thread currThd;
+    //    std::thread currThd;
 
-//    {
-//        std::lock_guard<std::mutex> lock(*netMtxPtr);
-//        currThd = std::move(clientSockThdMap[sock]);
-//        clientSockThdMap.erase(sock);
-//    }
+    //    {
+    //        std::lock_guard<std::mutex> lock(*netMtxPtr);
+    //        currThd = std::move(clientSockThdMap[sock]);
+    //        clientSockThdMap.erase(sock);
+    //    }
 
     int bytesRecv = 0;
 
     while(true)
     {
         bytesRecv = recv(sock, recvBuf, BUF_SIZE, 0);
+
+//        try
+//        {
+//            bytesRecv = recv(sock, recvBuf, BUF_SIZE, 0);
+//        }
+//        catch (...)
+//        {
+//            *consWriter << "Exception caught";
+//            break;
+//        }
 
         if(bytesRecv == SOCKET_ERROR)
         {
@@ -162,7 +177,6 @@ void NetListener::clientHandler(SOCKET sock)
 
     std::lock_guard<std::mutex> lock(*netMtxPtr);
     clientSockThdMap.erase(sock);
-//    std::terminate();
 }
 
 void NetListener::operator()(NetListener ** netPtr)
@@ -173,4 +187,20 @@ void NetListener::operator()(NetListener ** netPtr)
         return;
     }
     connHandler();
+
+    //    while(true)
+    //    {
+    //        try
+    //        {
+    //            connHandler();
+    //        }
+    //        catch (...)
+    //        {
+    //            shutdownServer();
+    //            if(!initServer())
+    //            {
+    //                return;
+    //            }
+    //        }
+    //    }
 }

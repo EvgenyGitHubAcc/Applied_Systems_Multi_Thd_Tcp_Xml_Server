@@ -32,6 +32,7 @@ public:
     NetListener(ConsoleWriter *, MainTHD *);
     NetListener(NetListener &&);
     bool initServer();
+    void shutdownServer();
     void connHandler();
     int recvWithTimeOut(SOCKET, char *, int, int, long);
     void clientHandler(SOCKET);

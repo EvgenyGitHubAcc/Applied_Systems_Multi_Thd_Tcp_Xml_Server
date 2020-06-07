@@ -78,7 +78,6 @@ MainTHD::MainTHD()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-
 #ifndef CONS_WRITE_DEBUG
     NetListener server(writerPtr, this);
 
