@@ -77,7 +77,6 @@ void NetListener::connHandler()
         if(clientSocket == INVALID_SOCKET)
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            WSACleanup();
             continue;
         }
 
@@ -132,16 +131,6 @@ void NetListener::clientHandler(SOCKET sock)
     {
         bytesRecv = recv(sock, recvBuf, BUF_SIZE, 0);
 
-//        try
-//        {
-//            bytesRecv = recv(sock, recvBuf, BUF_SIZE, 0);
-//        }
-//        catch (...)
-//        {
-//            *consWriter << "Exception caught";
-//            break;
-//        }
-
         if(bytesRecv == SOCKET_ERROR)
         {
             *consWriter << "Error receive from socket " + std::to_string(sock) + ". Error: " + std::to_string(WSAGetLastError());
@@ -172,7 +161,6 @@ void NetListener::clientHandler(SOCKET sock)
     }
     shutdown(sock, 0);
     closesocket(sock);
-    WSACleanup();
     *consWriter << "Disconnected socket: " + std::to_string(sock);
 
     std::lock_guard<std::mutex> lock(*netMtxPtr);
@@ -187,20 +175,4 @@ void NetListener::operator()(NetListener ** netPtr)
         return;
     }
     connHandler();
-
-    //    while(true)
-    //    {
-    //        try
-    //        {
-    //            connHandler();
-    //        }
-    //        catch (...)
-    //        {
-    //            shutdownServer();
-    //            if(!initServer())
-    //            {
-    //                return;
-    //            }
-    //        }
-    //    }
 }

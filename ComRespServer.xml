@@ -1,11 +1,11 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <message>
    <command>Comm1</command>
    <response>Resp1</response>
    <command>Comm2</command>
    <response>Resp2</response>
-   <command>Comm3</command>
-   <response>Resp3</response>
+   <command>Привет</command>
+   <response>И тебе</response>
    <command>Comm4</command>
    <response>Resp4</response>
    <command>Comm5</command>

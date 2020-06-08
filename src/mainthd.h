@@ -20,6 +20,7 @@ private:
 //    std::thread checkSockThread;
     std::map<std::string, std::string> dict;
     bool fillDict();
+    void setEncoding();
 public:
     void mainLoop();
     std::mutex * getNetMtx();

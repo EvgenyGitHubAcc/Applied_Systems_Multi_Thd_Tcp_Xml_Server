@@ -10,6 +10,7 @@ bool MainTHD::fillDict()
         return false;
     }
 
+
     *writerPtr << "XML file loaded";
 
     pugi::xml_node message = doc.child("message");
@@ -34,6 +35,12 @@ bool MainTHD::fillDict()
     *writerPtr << "Commands loaded";
 
     return true;
+}
+
+void MainTHD::setEncoding()
+{
+    //    SetConsoleCP(1251);
+    //    SetConsoleOutputCP(1251);
 }
 
 void MainTHD::mainLoop()
